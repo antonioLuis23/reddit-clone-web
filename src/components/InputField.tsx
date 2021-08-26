@@ -5,17 +5,26 @@ import {
   FormErrorMessage,
 } from "@chakra-ui/react";
 import React from "react";
-import { useField } from "formik";
+import { FieldHookConfig, useField } from "formik";
 
-interface InputFieldProps {}
+type InputFieldProps = FieldHookConfig<any> & {
+  label: string;
+  placeholder: string;
+  name: string;
+};
 
-export const InputField: React.FC<InputFieldProps> = ({}) => {
-  const [] = useField();
+export const InputField: React.FC<InputFieldProps> = ({ label, ...props }) => {
+  const [field, { error }] = useField(props);
   return (
-    <FormControl isInvalid={form.errors.name && form.touched.name}>
-      <FormLabel htmlFor="name">First name</FormLabel>
-      <Input {...field} id="name" placeholder="name" />
-      <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+    <FormControl isInvalid={!!error}>
+      <FormLabel htmlFor={field.name}>{label}</FormLabel>
+      <Input
+        {...field}
+        placeholder={props.placeholder}
+        type={props.type}
+        id={field.name}
+      />
+      {error ? <FormErrorMessage>{error}</FormErrorMessage> : null}
     </FormControl>
   );
 };
