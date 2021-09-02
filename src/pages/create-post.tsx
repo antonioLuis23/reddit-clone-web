@@ -1,27 +1,36 @@
-import { Box} from '@chakra-ui/layout';
-import { Button } from '@chakra-ui/react';
-import { Formik, Form } from 'formik';
-import React from 'react'
-import { InputField } from '../components/InputField';
-import { Wrapper } from '../components/Wrapper'
-
+import { Box } from "@chakra-ui/layout";
+import { Button } from "@chakra-ui/react";
+import { Formik, Form } from "formik";
+import React, { useEffect } from "react";
+import { InputField } from "../components/InputField";
+import { useCreatePostMutation, useMeQuery } from "../generated/graphql";
+import { useRouter } from "next/router";
+import { withUrqlClient } from "next-urql";
+import { createUrqlClient } from "../utils/createUrqlClient";
+import Layout from "../components/Layout";
+import { useIsAuth } from "../utils/useIsAuth";
 
 const CreatePost: React.FC<{}> = () => {
-    return (
-        <Wrapper variant="small">
-            <Formik
-        initialValues={{ title:"", text: ""}}
+  const router = useRouter();
+
+  useIsAuth();
+
+  const [, createPost] = useCreatePostMutation();
+  return (
+    <Layout variant="small">
+      <Formik
+        initialValues={{ title: "", text: "" }}
         onSubmit={async (values) => {
-            console.log(values);
+          console.log(values);
+          const { error } = await createPost({ input: values });
+          if (!error) {
+            router.push("/");
+          }
         }}
       >
         {({ isSubmitting }) => (
-        <Form>
-            <InputField
-              name="title"
-              placeholder="title"
-              label="Title"
-            />
+          <Form>
+            <InputField name="title" placeholder="title" label="Title" />
             <Box mt={4}>
               <InputField
                 textarea
@@ -31,7 +40,7 @@ const CreatePost: React.FC<{}> = () => {
               />
             </Box>
 
-            <Button  
+            <Button
               mt={4}
               type="submit"
               isLoading={isSubmitting}
@@ -42,8 +51,8 @@ const CreatePost: React.FC<{}> = () => {
           </Form>
         )}
       </Formik>
-        </Wrapper>
-    )
-}
+    </Layout>
+  );
+};
 
-export default CreatePost;
+export default withUrqlClient(createUrqlClient)(CreatePost);
